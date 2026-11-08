@@ -437,7 +437,13 @@ function drawLine(ctx,l,alpha,hl){
       [1,-1].forEach(sg=>{ctx.beginPath();rs.forEach((q,i)=>{const a=rs[Math.max(0,i-1)],b=rs[Math.min(rs.length-1,i+1)];const tx=b.x-a.x,ty=b.y-a.y,tl=Math.hypot(tx,ty)||1;const x=q.x+(-ty/tl)*g*sg,y=q.y+(tx/tl)*g*sg;if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);});ctx.lineWidth=0.06;ctx.stroke();});
       const hL=0.55,hw=0.3;ctx.beginPath();ctx.moveTo(end.x,end.y);ctx.lineTo(end.x-dx*hL+nx*hw,end.y-dy*hL+ny*hw);ctx.lineTo(end.x-dx*hL-nx*hw,end.y-dy*hL-ny*hw);ctx.closePath();ctx.fill();break;}
     case 'screen':tracePath(ctx,p);ctx.stroke();ctx.lineWidth=0.12;ctx.beginPath();ctx.moveTo(end.x+nx*0.5,end.y+ny*0.5);ctx.lineTo(end.x-nx*0.5,end.y-ny*0.5);ctx.stroke();break;
-    case 'handoff':tracePath(ctx,p);ctx.stroke();ctx.lineWidth=0.09;[0,0.24].forEach(o=>{const cx=end.x-dx*o,cy=end.y-dy*o;ctx.beginPath();ctx.moveTo(cx+nx*0.4,cy+ny*0.4);ctx.lineTo(cx-nx*0.4,cy-ny*0.4);ctx.stroke();});break;
+    case 'handoff':{ // çizgi + uçta # işareti
+      const hb=L>0.9?sub(p,0,L-0.3):p;tracePath(ctx,hb);ctx.stroke();ctx.lineWidth=0.085;const a=0.4,o=0.18;
+      [o,-o].forEach(k=>{ // dik iki çubuk
+        ctx.beginPath();ctx.moveTo(end.x-dx*k+nx*a,end.y-dy*k+ny*a);ctx.lineTo(end.x-dx*k-nx*a,end.y-dy*k-ny*a);ctx.stroke();
+        // paralel iki çubuk
+        ctx.beginPath();ctx.moveTo(end.x+nx*k-dx*a,end.y+ny*k-dy*a);ctx.lineTo(end.x+nx*k+dx*a,end.y+ny*k+dy*a);ctx.stroke();});
+      break;}
     default:ctx.lineWidth=0.07;tracePath(ctx,p);ctx.stroke();
   }
   ctx.restore();
@@ -664,15 +670,15 @@ const IC={
   dribble:'<svg viewBox="0 0 36 22"><path d="M3 11l3-4 3 8 3-8 3 8 3-8 3 8 3-4h3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M34 11l-7 4V7z" fill="currentColor"/></svg>',
   pass:'<svg viewBox="0 0 36 22"><path d="M3 11h23" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"/><path d="M34 11l-7 4V7z" fill="currentColor"/></svg>',
   screen:'<svg viewBox="0 0 36 22"><path d="M3 11h26M29 3v16" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>',
-  handoff:'<svg viewBox="0 0 36 22"><path d="M3 11h29M26 4v14M31 4v14" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+  handoff:'<svg viewBox="0 0 36 22"><path d="M2 11h20" stroke="currentColor" stroke-width="2"/><path d="M25 4v14M30 4v14M21 8.5h13M21 13.5h13" stroke="currentColor" stroke-width="2"/></svg>',
   shot:'<svg viewBox="0 0 36 22"><path d="M3 8.5h22M3 13.5h22" stroke="currentColor" stroke-width="2"/><path d="M34 11l-9 6V5z" fill="currentColor"/></svg>',
   pen:'<svg viewBox="0 0 36 22"><path d="M3 15c5-10 9 6 14-2s9 3 15-6" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
   text:'<svg viewBox="0 0 36 22"><text x="18" y="17" font-size="16" font-weight="800" text-anchor="middle" fill="currentColor">Aa</text></svg>',
   erase:'<svg viewBox="0 0 36 22"><path d="M12 18l-4-4 11-11 8 8-7 7zM8 18h20" fill="none" stroke="currentColor" stroke-width="2"/></svg>'
 };
-const TOOLS=[['select','Seç/Taşı'],['erase','Sil'],['off','Hücumcu'],['def','Savunmacı'],['ball','Top'],['cone','Kone'],['cut','Koşu'],['dribble','Dripling'],['pass','Pas'],['screen','Perde'],['handoff','El verme'],['shot','Şut'],['pen','Kalem'],['text','Yazı']];
+const TOOLS=[['select','Seç/Taşı'],['erase','Sil'],['off','Hücumcu'],['def','Savunmacı'],['ball','Top'],['cone','Kone'],['cut','Koşu'],['dribble','Dripling'],['pass','Pas'],['screen','Perde'],['handoff','Handoff'],['shot','Şut'],['pen','Kalem'],['text','Yazı']];
 const HINTS={select:'Dokun: seç • Sürükle: taşı • Çift dokun: etiket/yazı değiştir',erase:'Silmek için nesneye dokun',off:'Hücumcuyu koymak için sahaya dokun',def:'Savunmacıyı koymak için sahaya dokun',ball:'Topu koymak için dokun',cone:'Koneyi koymak için dokun',
-  cut:'Oyuncudan başlayarak koşu yolunu çiz – sonraki aşamada oyuncu orada olur',dribble:'Oyuncudan başlayarak dripling yolunu çiz',pass:'Toplu oyuncudan pası alacak oyuncuya çiz – sonraki aşamada top onda olur',screen:'Perdeci oyuncudan perde noktasına çiz',handoff:'Oyuncudan el verme noktasına çiz',shot:'Şutu atan oyuncudan potaya çiz – sonraki aşamada top potada olur',pen:'Serbest çizim',text:'Yazı eklemek için dokun'};
+  cut:'Oyuncudan başlayarak koşu yolunu çiz – sonraki aşamada oyuncu orada olur',dribble:'Oyuncudan başlayarak dripling yolunu çiz',pass:'Toplu oyuncudan pası alacak oyuncuya çiz – sonraki aşamada top onda olur',screen:'Perdeci oyuncudan perde noktasına çiz',handoff:'Handoff: topu verecek oyuncudan alacak oyuncuya çiz – sonraki aşamada top onda olur',shot:'Şutu atan oyuncudan potaya çiz – sonraki aşamada top potada olur',pen:'Serbest çizim',text:'Yazı eklemek için dokun'};
 function buildTools(){
   const b=$('#tools');b.innerHTML='';
   b.appendChild(el('div','sep','Araçlar'));
@@ -1060,7 +1066,7 @@ function buildMenu(){
     ['Görünüm',[['Tek saha (büyük çalışma)',()=>setView('single'),V==='single'],['4\'lü saha (4 aşama birden)',()=>setView('quad'),V==='quad'],'-',['Yarım saha',()=>setCourt('half'),s.court==='half'],['Tam saha (full court)',()=>setCourt('full'),s.court==='full'],'-',['Set listesini aç/kapat',toggleSide]]],
     ['Aşama',[['Yeni aşama (hareketlere göre)',addFrame],['Aşamayı kopyala',dupFrame],['Aşamayı sil',delFrame],'-',['▶ Oynat / Durdur',play]]],
     ['Oyuncular',[['5 Hücumcu diz',()=>quickPlace('off')],['5 Savunmacı diz',()=>quickPlace('def')],'-',['Hücumcu ekle',()=>setTool('off'),S.tool==='off'],['Savunmacı ekle',()=>setTool('def'),S.tool==='def'],['Top',()=>setTool('ball'),S.tool==='ball'],['Kone',()=>setTool('cone'),S.tool==='cone']]],
-    ['Çizgiler',[['Koşu',()=>setTool('cut'),S.tool==='cut'],['Dripling',()=>setTool('dribble'),S.tool==='dribble'],['Pas',()=>setTool('pass'),S.tool==='pass'],['Perde',()=>setTool('screen'),S.tool==='screen'],['El verme',()=>setTool('handoff'),S.tool==='handoff'],['Şut',()=>setTool('shot'),S.tool==='shot'],['Kalem',()=>setTool('pen'),S.tool==='pen'],['Yazı',()=>setTool('text'),S.tool==='text'],'-',['Düz çizgi',()=>{S.straight=true;updToolUI();},S.straight],['Serbest çizgi',()=>{S.straight=false;updToolUI();},!S.straight]]],
+    ['Çizgiler',[['Koşu',()=>setTool('cut'),S.tool==='cut'],['Dripling',()=>setTool('dribble'),S.tool==='dribble'],['Pas',()=>setTool('pass'),S.tool==='pass'],['Perde',()=>setTool('screen'),S.tool==='screen'],['Handoff',()=>setTool('handoff'),S.tool==='handoff'],['Şut',()=>setTool('shot'),S.tool==='shot'],['Kalem',()=>setTool('pen'),S.tool==='pen'],['Yazı',()=>setTool('text'),S.tool==='text'],'-',['Düz çizgi',()=>{S.straight=true;updToolUI();},S.straight],['Serbest çizgi',()=>{S.straight=false;updToolUI();},!S.straight]]],
     ['Ayarlar',[['Ayarlar ve bölümler…',()=>{renderSettings();showM('mSet');}],['Yedek…',()=>showM('mBak')]]]
   ];
   const nav=$('#menubar');nav.innerHTML='';
